@@ -1,0 +1,56 @@
+/* Custom Scrollbar for Webkit */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Layout Button Styles - Replicating the @apply logic with standard CSS */
+.layout-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+    cursor: pointer;
+    color: #64748b;
+    /* slate-500 */
+}
+
+.layout-btn:hover {
+    background-color: #f1f5f9;
+    /* slate-100 */
+    color: #334155;
+    /* slate-700 */
+}
+
+.layout-btn.active {
+    background-color: #f0f9ff;
+    /* brand-50 */
+    border-color: #bae6fd;
+    /* brand-200 */
+    color: #0284c7;
+    /* brand-600 */
+    box-shadow: 0 0 0 1px #bae6fd;
+    /* ring-1 ring-brand-200 */
+}
+.view-tab.active {
+    background-color: white;
+    color: #0f172a;
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}

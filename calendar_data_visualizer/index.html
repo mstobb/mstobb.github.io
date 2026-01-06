@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life Data Visualizer</title>
+
+    <!-- Dependencies -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body
+    class="bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 h-screen flex overflow-hidden font-sans transition-colors duration-200">
+
+    <!-- Sidebar Control Panel -->
+    <aside
+        class="w-80 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col shadow-sm z-10 transition-colors duration-200">
+        <div class="p-6 border-b border-slate-100 dark:border-slate-700">
+            <h1 class="text-2xl font-semibold text-slate-800 dark:text-white tracking-tight">Life Data <span
+                    class="text-brand-600 dark:text-brand-500">Viz</span></h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Visualize your daily habits</p>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-6 space-y-8">
+            <!-- Views Navigation -->
+            <div id="views-nav" class="hidden grid grid-cols-2 gap-2 p-1 bg-slate-100 dark:bg-slate-700 rounded-lg">
+                <button
+                    class="view-tab active px-3 py-2 rounded-md text-sm font-medium transition-all dark:text-slate-200"
+                    data-view="calendar">Calendar</button>
+                <button
+                    class="view-tab px-3 py-2 rounded-md text-sm font-medium transition-all text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                    data-view="correlation">Analysis</button>
+            </div>
+
+            <!-- Upload Section -->
+            <div id="upload-section">
+                <h2 class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">Data
+                    Source</h2>
+                <div id="drop-zone"
+                    class="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-8 text-center hover:border-brand-500 dark:hover:border-brand-500 hover:bg-brand-50 dark:hover:bg-brand-900/20 transition-all cursor-pointer group">
+                    <div class="text-slate-400 dark:text-slate-500 group-hover:text-brand-500 mb-2">
+                        <svg class="w-8 h-8 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
+                            </path>
+                        </svg>
+                    </div>
+                    <p class="text-sm text-slate-600 dark:text-slate-300 font-medium">Click or drop CSV here</p>
+                    <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">First column must be Date</p>
+                    <input type="file" id="file-input" class="hidden" accept=".csv">
+                </div>
+                <div id="file-info"
+                    class="hidden mt-3 p-3 bg-slate-100 dark:bg-slate-700 rounded-lg flex items-center justify-between">
+                    <span id="filename"
+                        class="text-sm font-medium text-slate-700 dark:text-slate-200 truncate">data.csv</span>
+                    <button id="remove-file" class="text-slate-400 hover:text-red-500"><svg class="w-4 h-4" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"></path>
+                        </svg></button>
+                </div>
+                <div class="mt-3 text-center">
+                    <a href="sample_data/Sample_Data.csv" download
+                        class="text-xs text-brand-600 hover:text-brand-800 dark:text-brand-400 dark:hover:text-brand-300 hover:underline flex items-center justify-center gap-1">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                        </svg>
+                        Download sample CSV
+                    </a>
+                </div>
+            </div>
+
+            <!-- Controls Section (Hidden until data loaded) -->
+            <div id="controls-section" class="hidden space-y-6">
+
+                <!-- Attribute Selector -->
+                <div>
+                    <h2 class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">
+                        Attribute</h2>
+                    <select id="attribute-select"
+                        class="w-full p-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition-all">
+                        <!-- Options populated by JS -->
+                    </select>
+                </div>
+
+                <!-- Layout Selector -->
+                <div>
+                    <h2 class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">
+                        Layout</h2>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button class="layout-btn active" data-layout="week">
+                            <div
+                                class="h-8 bg-slate-100 dark:bg-slate-700 rounded mb-1 border border-slate-200 dark:border-slate-600">
+                            </div>
+                            <span class="text-[10px] font-medium">Weeks</span>
+                        </button>
+                        <button class="layout-btn" data-layout="month">
+                            <div
+                                class="grid grid-cols-2 gap-0.5 h-8 mb-1 p-0.5 bg-slate-100 dark:bg-slate-700 rounded border border-slate-200 dark:border-slate-600">
+                                <div class="bg-slate-300 dark:bg-slate-500 rounded-sm"></div>
+                                <div class="bg-slate-300 dark:bg-slate-500 rounded-sm"></div>
+                            </div>
+                            <span class="text-[10px] font-medium">Grid</span>
+                        </button>
+                        <button class="layout-btn" data-layout="neatocal">
+                            <div
+                                class="flex gap-0.5 h-8 mb-1 p-0.5 bg-slate-100 dark:bg-slate-700 rounded border border-slate-200 dark:border-slate-600">
+                                <div class="w-1 bg-slate-300 dark:bg-slate-500 rounded-sm"></div>
+                                <div class="w-1 bg-slate-300 dark:bg-slate-500 rounded-sm"></div>
+                                <div class="w-1 bg-slate-300 dark:bg-slate-500 rounded-sm"></div>
+                            </div>
+                            <span class="text-[10px] font-medium">Neat</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Appearance -->
+                <div>
+                    <h2 class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">
+                        Appearance</h2>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Active Color</label>
+                            <div class="flex items-center gap-2">
+                                <input type="color" id="color-active" value="#0ea5e9"
+                                    class="w-8 h-8 rounded cursor-pointer border-0 p-0">
+                                <span class="text-xs text-slate-400 dark:text-slate-500 font-mono"
+                                    id="color-active-hex">#0ea5e9</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Background</label>
+                            <div class="flex items-center gap-2">
+                                <input type="color" id="color-bg" value="#ffffff"
+                                    class="w-8 h-8 rounded cursor-pointer border-0 p-0">
+                                <span class="text-xs text-slate-400 dark:text-slate-500 font-mono"
+                                    id="color-bg-hex">#ffffff</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="p-4 text-center border-t border-slate-100 dark:border-slate-700">
+            <p class="text-xs text-slate-400 dark:text-slate-500">© 2026 Michael Stobb</p>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main
+        class="flex-1 bg-slate-50 dark:bg-slate-900 relative overflow-hidden flex flex-col transition-colors duration-200">
+        <!-- Visualization Canvas -->
+        <div class="flex-1 overflow-auto p-8 flex flex-col" id="main-scroll-area">
+
+            <div id="canvas-container"
+                class="flex-none min-h-[500px] flex items-center justify-center bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 mb-6 transition-colors duration-200">
+                <div id="placeholder-msg" class="text-slate-400 dark:text-slate-500 text-center">
+                    <p class="text-lg font-medium mb-1">No data loaded</p>
+                    <p class="text-sm">Upload a CSV file to get started</p>
+                </div>
+                <!-- D3 SVG will append here -->
+            </div>
+
+            <!-- Stats & Charts Section -->
+            <div id="stats-container" class="hidden flex-none space-y-6 pb-12">
+
+                <!-- Quick Stats Cards -->
+                <div class="grid grid-cols-4 gap-4">
+                    <div
+                        class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+                        <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                            Total</p>
+                        <p class="text-2xl font-semibold text-slate-700 dark:text-slate-200 font-mono" id="stat-total">-
+                        </p>
+                    </div>
+                    <div
+                        class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+                        <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                            Daily Avg</p>
+                        <p class="text-2xl font-semibold text-slate-700 dark:text-slate-200 font-mono" id="stat-avg">-
+                        </p>
+                    </div>
+                    <div
+                        class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+                        <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                            Max</p>
+                        <p class="text-2xl font-semibold text-slate-700 dark:text-slate-200 font-mono" id="stat-max">-
+                        </p>
+                    </div>
+                    <div
+                        class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+                        <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                            Active Days</p>
+                        <p class="text-2xl font-semibold text-slate-700 dark:text-slate-200 font-mono" id="stat-count">-
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Line Chart -->
+                <div
+                    class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+                    <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4">Trend
+                    </p>
+                    <div id="chart-container" class="h-64 w-full"></div>
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Correlation View Area (Hidden by default, toggled via tabs) -->
+    <!-- We place it inside main, effectively swapping with main-scroll-area -->
+    <div class="hidden flex-1 overflow-auto p-8 flex flex-col bg-slate-50 dark:bg-slate-900"
+        id="correlation-scroll-area">
+        <div class="w-full flex flex-wrap gap-6 justify-start items-start">
+
+            <!-- Matrix -->
+            <div
+                class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 flex flex-col w-[550px] h-[600px] shrink-0">
+                <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-4">Correlation Matrix</h3>
+                <div id="matrix-container" class="flex-1 flex items-center justify-center"></div>
+            </div>
+
+            <!-- Scatter -->
+            <div
+                class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 flex flex-col w-[550px] h-[600px] shrink-0">
+                <h3 class="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-4">Scatter Plot</h3>
+                <div id="scatter-container" class="flex-1 flex items-center justify-center">
+                    <p class="text-slate-400 dark:text-slate-500 text-sm">Select a cell in the matrix</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="js/main.js"></script>
+</body>
+
+</html>
