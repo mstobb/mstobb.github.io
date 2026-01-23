@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ring Lattice Random Walk</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        :root {
+            /* Nord Theme Palette */
+            --nord0: #2E3440;
+            /* Polar Night - Strongest */
+            --nord1: #3B4252;
+            /* Polar Night - Lighter */
+            --nord2: #434C5E;
+            --nord3: #4C566A;
+            --nord4: #D8DEE9;
+            /* Snow Storm - Darkest */
+            --nord5: #E5E9F0;
+            --nord6: #ECEFF4;
+            /* Snow Storm - Lightest */
+            --nord7: #8FBCBB;
+            /* Frost - Teal */
+            --nord8: #88C0D0;
+            /* Frost - Cyan */
+            --nord9: #81A1C1;
+            /* Frost - Blue */
+            --nord10: #5E81AC;
+            /* Frost - Dark Blue */
+            --nord11: #BF616A;
+            /* Aurora - Red */
+            --nord14: #A3BE8C;
+            /* Aurora - Green */
+
+            --primary: var(--nord8);
+            --primary-hover: var(--nord7);
+            --bg: var(--nord0);
+            --card-bg: var(--nord1);
+            --text: var(--nord6);
+            --text-muted: var(--nord4);
+            --border: var(--nord3);
+            --input-bg: var(--nord2);
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 2rem;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--nord6);
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+        }
+
+        .controls {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            display: flex;
+            gap: 1.5rem;
+            align-items: flex-end;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            border: 1px solid var(--border);
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        input[type="number"] {
+            padding: 0.5rem 0.75rem;
+            background-color: var(--input-bg);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 1rem;
+            width: 120px;
+            transition: all 0.2s;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(136, 192, 208, 0.2);
+        }
+
+        button {
+            background-color: var(--nord10);
+            color: var(--nord6);
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.2s;
+            height: 42px;
+            /* Align with inputs */
+        }
+
+        button:hover {
+            background-color: var(--nord9);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        /* Disabled state */
+        button:disabled {
+            background-color: var(--nord3);
+            cursor: not-allowed;
+            color: var(--nord4);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        @media (min-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .full-width {
+                grid-column: span 2;
+            }
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .card h2 {
+            margin-top: 0;
+            font-size: 1.25rem;
+            align-self: flex-start;
+            margin-bottom: 1rem;
+            color: var(--nord5);
+        }
+
+        .viz-container {
+            width: 100%;
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        svg {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .bar {
+            fill: var(--nord8);
+        }
+
+        .bar:hover {
+            fill: var(--nord7);
+        }
+
+        .axis text {
+            font-family: 'Inter', sans-serif;
+            font-size: 12px;
+            fill: var(--text-muted);
+        }
+
+        .axis path,
+        .axis line {
+            stroke: var(--border);
+        }
+
+        .node-circle {
+            stroke: var(--nord8);
+            fill: var(--nord1);
+            /* Dark fill for circles */
+            stroke-width: 2px;
+        }
+
+        .node-text {
+            font-size: 14px;
+            font-weight: bold;
+            text-anchor: middle;
+            dominant-baseline: central;
+            fill: var(--text);
+        }
+
+        .start-node {
+            fill: var(--nord10);
+            /* Frost Dark Blue for start */
+            stroke: var(--nord9);
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: absolute;
+            background: var(--nord0);
+            color: var(--nord6);
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            border: 1px solid var(--border);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Random Walk Simulator</h1>
+            <p class="subtitle">Markov chain random walk on a ring lattice (the ladybug problem!)</p>
+        </header>
+
+        <div class="controls">
+            <div class="input-group">
+                <label for="numStates">Number of States (N)</label>
+                <input type="number" id="numStates" value="12" min="3" max="50">
+            </div>
+            <div class="input-group">
+                <label for="startState">Start Position</label>
+                <input type="number" id="startState" value="0" min="0">
+            </div>
+            <div class="input-group">
+                <label for="numSims">Simulations</label>
+                <input type="number" id="numSims" value="100" min="1" max="10000">
+            </div>
+            <button id="runBtn">
+                <span id="btnText">Run Simulations</span>
+                <span id="loadingSpinner" style="display: none; margin-left: 8px;">(Running...)</span>
+            </button>
+        </div>
+
+        <div class="grid">
+            <!-- Lattice Visualization -->
+            <div class="card full-width">
+                <h2>Ring Lattice Structure</h2>
+                <div id="ringViz" class="viz-container"></div>
+            </div>
+
+            <!-- Last Visited Histogram -->
+            <div class="card">
+                <h2>Last Visited State Frequency (Probability)</h2>
+                <div id="histLastViz" class="viz-container"></div>
+            </div>
+
+            <!-- Iterations Histogram -->
+            <div class="card">
+                <h2>Total Iterations Distribution</h2>
+                <div id="histIterViz" class="viz-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- State Management ---
+        const state = {
+            N: 12,
+            startNode: 0,
+            M: 100,
+            results: {
+                lastVisited: [],
+                iterations: []
+            }
+        };
+
+        // --- DOM Elements ---
+        const inputs = {
+            N: document.getElementById('numStates'),
+            start: document.getElementById('startState'),
+            M: document.getElementById('numSims'),
+            btn: document.getElementById('runBtn'),
+            btnText: document.getElementById('btnText'),
+            spinner: document.getElementById('loadingSpinner')
+        };
+
+        const viz = {
+            ring: document.getElementById('ringViz'),
+            histLast: document.getElementById('histLastViz'),
+            histIter: document.getElementById('histIterViz')
+        };
+
+        // --- Initialization ---
+        function init() {
+            inputs.btn.addEventListener('click', handleRunClick);
+
+            // Initial Draw of Lattice
+            updateStateFromInputs();
+            drawRing();
+
+            // Add listeners to update ring viz on input change (without running sum)
+            inputs.N.addEventListener('change', () => { updateStateFromInputs(); drawRing(); });
+            inputs.start.addEventListener('change', () => { updateStateFromInputs(); drawRing(); });
+        }
+
+        function updateStateFromInputs() {
+            state.N = parseInt(inputs.N.value);
+            state.startNode = parseInt(inputs.start.value);
+            state.M = parseInt(inputs.M.value);
+
+            // Validation
+            if (state.N < 3) state.N = 3;
+            if (state.startNode >= state.N) state.startNode = state.N - 1;
+            if (state.startNode < 0) state.startNode = 0;
+
+            // Sync inputs back if corrected
+            inputs.N.value = state.N;
+            inputs.start.value = state.startNode;
+        }
+
+        // --- Simulation Logic ---
+        function runSimulation() {
+            // Returns { lastState, steps }
+            const visited = new Set();
+            let current = state.startNode;
+            let steps = 0;
+
+            visited.add(current);
+
+            while (visited.size < state.N) {
+                steps++;
+                // Move
+                if (Math.random() < 0.5) {
+                    // CCW (Left)
+                    current = (current - 1 + state.N) % state.N;
+                } else {
+                    // CW (Right)
+                    current = (current + 1) % state.N;
+                }
+
+                visited.add(current);
+            }
+
+            // The loop breaks immediately after adding the Nth unique node
+            return {
+                lastState: current,
+                steps: steps
+            };
+        }
+
+        function handleRunClick() {
+            // Set loading state
+            inputs.btn.disabled = true;
+            inputs.btnText.textContent = "Simulating...";
+            inputs.spinner.style.display = "inline";
+
+            // Use setTimeout to allow UI to render the loading state before blocking
+            setTimeout(() => {
+                runAll();
+
+                // Reset loading state
+                inputs.btn.disabled = false;
+                inputs.btnText.textContent = "Run Simulations";
+                inputs.spinner.style.display = "none";
+            }, 50);
+        }
+
+        function runAll() {
+            updateStateFromInputs();
+
+            // Reset results
+            state.results.lastVisited = [];
+            state.results.iterations = [];
+
+            // Run batch
+            for (let i = 0; i < state.M; i++) {
+                const res = runSimulation();
+                state.results.lastVisited.push(res.lastState);
+                state.results.iterations.push(res.steps);
+            }
+
+            drawHistograms();
+        }
+
+        // --- D3 Visualization ---
+
+        function drawRing() {
+            const container = viz.ring;
+            container.innerHTML = '';
+
+            const width = 600;
+            const height = 400;
+
+            // Reduced radius (by half roughly, 40 -> 20 helps, but mainly the division factor)
+            // Previous: Math.min(width, height) / 2 - 40;
+            const radius = (Math.min(width, height) / 2 - 40) * 0.6; // Reduced size to ~60%
+
+            const svg = d3.select(container)
+                .append('svg')
+                .attr('viewBox', `0 0 ${width} ${height}`)
+                .attr('preserveAspectRatio', 'xMidYMid meet');
+
+            const center = { x: width / 2, y: height / 2 };
+
+            // Generate nodes
+            const nodes = Array.from({ length: state.N }, (_, i) => {
+                const angle = (2 * Math.PI * i) / state.N - Math.PI / 2; // -Pi/2 to start at top
+                return {
+                    id: i,
+                    x: center.x + radius * Math.cos(angle),
+                    y: center.y + radius * Math.sin(angle)
+                };
+            });
+
+            // Draw Links
+            const lineGen = d3.line()
+                .x(d => d.x)
+                .y(d => d.y);
+
+            // Close the loop
+            const pathData = lineGen(nodes) + `L${nodes[0].x},${nodes[0].y}`;
+
+            svg.append('path')
+                .attr('d', pathData)
+                .attr('stroke', '#cbd5e1')
+                .attr('stroke-width', 2)
+                .attr('fill', 'none');
+
+            // Draw Nodes
+            const nodeGroup = svg.selectAll('g')
+                .data(nodes)
+                .enter()
+                .append('g');
+
+            nodeGroup.append('circle')
+                .attr('class', d => d.id === state.startNode ? 'node-circle start-node' : 'node-circle')
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y)
+                .attr('r', 15); // Slightly smaller nodes too
+
+            nodeGroup.append('text')
+                .attr('class', 'node-text')
+                .attr('x', d => d.x)
+                .attr('y', d => d.y)
+                .style('font-size', '12px')
+                .text(d => d.id);
+        }
+
+        function drawHistograms() {
+            // Pass 'normalize' flag for Last Visited
+            drawBarChart(viz.histLast, state.results.lastVisited, 'Last Visited State', 'Probability', true, true);
+            drawBarChart(viz.histIter, state.results.iterations, 'Total Steps', 'Frequency', false, false);
+        }
+
+        function drawBarChart(containerDom, data, xLabel, yLabel, isCategorial, normalize = false) {
+            containerDom.innerHTML = '';
+
+            const margin = { top: 20, right: 30, bottom: 40, left: 60 }; // Increased left for decimals
+            const width = containerDom.clientWidth || 400;
+            const height = 300;
+
+            const svg = d3.select(containerDom)
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height);
+
+            const chartW = width - margin.left - margin.right;
+            const chartH = height - margin.top - margin.bottom;
+
+            const g = svg.append('g')
+                .attr('transform', `translate(${margin.left},${margin.top})`);
+
+            let bins;
+            let x;
+            let yDomainMax;
+
+            if (isCategorial) {
+                // States are 0 to N-1
+                const counts = new Array(state.N).fill(0);
+                data.forEach(d => {
+                    if (d >= 0 && d < state.N) counts[d]++;
+                });
+
+                // Normalize if requested
+                const values = normalize ? counts.map(c => c / state.M) : counts;
+
+                bins = values.map((val, i) => ({ x0: i, x1: i + 1, value: val, label: i }));
+
+                x = d3.scaleBand()
+                    .domain(bins.map(d => d.label))
+                    .range([0, chartW])
+                    .padding(0.1);
+
+                yDomainMax = d3.max(bins, d => d.value);
+
+            } else {
+                // Iterations (Continuous-ish)
+                x = d3.scaleLinear()
+                    .domain([d3.min(data), d3.max(data)])
+                    .range([0, chartW])
+                    .nice();
+
+                const histogram = d3.bin()
+                    .domain(x.domain())
+                    .thresholds(x.ticks(20));
+
+                bins = histogram(data).map(bin => ({
+                    x0: bin.x0,
+                    x1: bin.x1,
+                    value: normalize ? bin.length / state.M : bin.length
+                }));
+
+                yDomainMax = d3.max(bins, d => d.value);
+            }
+
+            // Ensure Y max is at least something to avoid divide by zero errors if empty
+            yDomainMax = yDomainMax || 0;
+            if (normalize && yDomainMax === 0) yDomainMax = 1; // Fallback
+
+            const y = d3.scaleLinear()
+                .domain([0, yDomainMax])
+                .range([chartH, 0])
+                .nice();
+
+            // Bars
+            g.selectAll('rect')
+                .data(bins)
+                .enter()
+                .append('rect')
+                .attr('class', 'bar')
+                .attr('x', d => isCategorial ? x(d.label) : x(d.x0) + 1)
+                .attr('width', d => isCategorial ? x.bandwidth() : Math.max(0, x(d.x1) - x(d.x0) - 1))
+                .attr('y', d => y(d.value))
+                .attr('height', d => chartH - y(d.value));
+
+            // X Axis
+            g.append('g')
+                .attr('class', 'axis')
+                .attr('transform', `translate(0,${chartH})`)
+                .call(d3.axisBottom(x).ticks(isCategorial ? state.N : 10));
+
+            // Y Axis
+            g.append('g')
+                .attr('class', 'axis')
+                .call(d3.axisLeft(y).ticks(5));
+
+            // Labels
+            svg.append('text')
+                .attr('text-anchor', 'middle')
+                .attr('x', width / 2)
+                .attr('y', height - 5)
+                .style('font-size', '12px')
+                .text(xLabel);
+
+            // Y-Axis Label
+            svg.append('text')
+                .attr('text-anchor', 'middle')
+                .attr('transform', 'rotate(-90)')
+                .attr('y', -45)
+                .attr('x', -height / 2 + margin.top)
+                .style('font-size', '12px')
+                .text(yLabel);
+        }
+
+        // Run
+        init();
+
+    </script>
+</body>
+
+</html>
