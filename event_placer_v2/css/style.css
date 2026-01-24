@@ -1,0 +1,284 @@
+:root {
+    --bg-dark: #121212;
+    --bg-card: #1e1e1e;
+    --bg-input: #2d2d2d;
+    --text-primary: #e0e0e0;
+    --text-secondary: #a0a0a0;
+    --accent: #6a9ede;
+    --accent-hover: #5a8ec0;
+    --danger: #cf6679;
+    --success: #03dac6;
+    --border: #333;
+    --font-main: 'Outfit', sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body.dark-theme {
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
+    font-family: var(--font-main);
+    line-height: 1.5;
+}
+
+.container {
+    max-width: 1800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+h1 {
+    font-weight: 600;
+    letter-spacing: 2px;
+    margin-bottom: 5px;
+}
+
+.subtitle {
+    color: var(--text-secondary);
+    font-weight: 300;
+}
+
+/* Dashboard Grid */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    gap: 20px;
+    align-items: start;
+}
+
+@media (max-width: 1100px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Cards */
+.card {
+    background-color: var(--bg-card);
+    border-radius: 12px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    overflow: hidden;
+}
+
+.card-header {
+    padding: 15px 20px;
+    background-color: rgba(255,255,255,0.03);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-header h3 {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.card-body {
+    padding: 20px;
+}
+
+.viz-body {
+    min-height: 600px;
+}
+
+/* Status Indicators */
+.status-indicator {
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+/* File Drop Zone */
+.file-drop-zone {
+    border: 2px dashed var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    margin: 15px 0;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.file-drop-zone.dragover, .file-drop-zone:hover {
+    border-color: var(--accent);
+    background-color: rgba(106, 158, 222, 0.1);
+}
+
+.file-drop-zone.has-file {
+    border-color: var(--success);
+    border-style: solid;
+}
+
+.drop-text {
+    display: block;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.or-text {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin: 0 5px;
+}
+
+.file-btn {
+    color: var(--accent);
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.file-btn:hover {
+    text-decoration: underline;
+}
+
+.instruction-text {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+code {
+    background-color: rgba(255,255,255,0.1);
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-family: monospace;
+}
+
+/* Buttons */
+.btn {
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-family: var(--font-main);
+    font-weight: 500;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+}
+
+.btn-outline {
+    background: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    width: 100%;
+}
+
+.btn-outline:hover {
+    background: rgba(106, 158, 222, 0.1);
+}
+
+.btn-primary {
+    background-color: var(--accent);
+    color: white;
+    width: 100%;
+}
+
+.btn-primary:hover {
+    background-color: var(--accent-hover);
+}
+
+.btn-large {
+    padding: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-top: 10px;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: grayscale(100%);
+}
+
+/* Form Controls */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.row-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+select, input[type="number"] {
+    width: 100%;
+    background-color: var(--bg-input);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    padding: 8px;
+    border-radius: 6px;
+}
+
+/* Day Picker */
+.day-picker {
+    display: flex;
+    justify-content: space-between;
+    background-color: var(--bg-input);
+    padding: 5px;
+    border-radius: 6px;
+}
+
+.day-picker label {
+    margin: 0;
+    padding: 5px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--text-primary);
+}
+
+.day-picker input {
+    margin-bottom: 4px;
+}
+
+/* Slider Inputs */
+.slider-inputs {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.small-note {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-align: center;
+    margin-top: 8px;
+}
+
+/* Metrics */
+.metrics-summary {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.metric-item {
+    display: block;
+    margin-bottom: 4px;
+}
+
+.highlight {
+    color: var(--accent);
+    font-weight: 600;
+}

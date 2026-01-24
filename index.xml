@@ -31,6 +31,7 @@ Cedar Rapids, IA 52402&lt;/p&gt;
 &lt;p&gt;A few examples of my code (those that I&amp;rsquo;m able to make publicly available) can be seen on my GitHub page. Some are just for fun (like the battleship simulator), while others were made for research purposes.&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;strong&gt;&lt;a href="https://eventplacer.app"&gt;Event Placer&lt;/a&gt;&lt;/strong&gt;: A free tool to schedule events into a limited number of rooms. Built with Coe Students.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href="https://stobb.org/event_placer_v2/"&gt;Event Placer V2&lt;/a&gt;&lt;/strong&gt;: A rewrite of the above tool that uses strictly client-side compute - its faster than the original!&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;&lt;a href="https://stobb.org/calendar_data_visualizer/"&gt;Habit Visualizer&lt;/a&gt;&lt;/strong&gt;: A webapp to display daily calendar habits. You have to do the tracking though.&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;&lt;a href="https://stobb.org/ladybug_problem/"&gt;Ladybug Problem&lt;/a&gt;&lt;/strong&gt;: 3Blue1Brown posted a fun &lt;a href="https://www.youtube.com/shorts/t3jZ2xGOvYg"&gt;Ladybug problem&lt;/a&gt; that was just begging for another brute force solution.&lt;/li&gt;
 &lt;/ul&gt;
